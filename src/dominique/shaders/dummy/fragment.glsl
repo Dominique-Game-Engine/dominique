@@ -33,16 +33,8 @@ void main() {
     // TODO pass this as vec2 from uniforms, right now my uniforms only support floats
     vec2 mousePos = vec2(uMouseX, uMouseY);
 
-    //    gl_FragColor = vec4(sin(uElapsedTime * 20.0), 0.0, 1.0, 1.0);
-
-    //    float x = step(0.5, vUv.y);
-    //    vec3 color = mix(vec3(0.0, 0.0, 1.0), vec3(1.0, 0.0, 0.0), x);
-    //    gl_FragColor = vec4(color, 1.0);
-    //    gl_FragColor = vec4(vUv.x, vUv.y, 0.0, 1.0);
-
-    //    gl_FragColor *= vec4(1.0, mousePos, 1.0);
-
-    //    gl_FragColor = vec4(vUv, 0.5 + 0.5 * sin(uElapsedTime), 1.0);
+    float movementAmmount = 0.01;
+    float parallaxAmmount = 0.005;
 
     vec3 skyColor = vec3(0.145, 0.66, 0.93);
     vec3 centerColor = vec3(0.03, 0.13, 0.21);
@@ -57,7 +49,7 @@ void main() {
     float cSmoothness = 0.001;
     float cSmoothnessInner = 0.045;
 
-    float circlesDiff = circlesWidth - 0.001;
+    float circlesDiff = circlesWidth - 0.01;
 
     vec3 color = skyColor;
 
@@ -67,8 +59,9 @@ void main() {
 
     for (int i = 0; i < circlesAmmount; i++) {
         float diff =  float(i) * circlesDiff;
-        float c1 = ringSmoothSDF(vUv, cCenter, cRadius + diff, cInnerRadius + diff, cSmoothness, cSmoothness);
-        float c2 = ringSmoothSDF(vUv, cCenter, cRadius + diff, cInnerRadius + diff, cSmoothness, cSmoothnessInner);
+        vec2 center = cCenter + mousePos * parallaxAmmount * float(i);
+        float c1 = ringSmoothSDF(vUv, center, cRadius + diff, cInnerRadius + diff, cSmoothness, cSmoothness);
+        float c2 = ringSmoothSDF(vUv, center, cRadius + diff, cInnerRadius + diff, cSmoothness, cSmoothnessInner);
         vec3 c1Color = mix(cColor, cColorDark, c2);
         color = mix(color, c1Color, c1);
     }
