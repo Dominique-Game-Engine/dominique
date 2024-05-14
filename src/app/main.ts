@@ -11,7 +11,7 @@ import {
 } from "../dominique/shaders";
 import Stats from "stats.js";
 
-type ExtraUniformsLocations = "deltaTime" | "elapsedTime";
+type ExtraUniformsLocations = "deltaTime" | "elapsedTime" | "mouseX" | "mouseY";
 
 export default function app(gl: WebGL2RenderingContext) {
   // Set clear color to black, fully opaque
@@ -42,7 +42,9 @@ export default function app(gl: WebGL2RenderingContext) {
       ),
       modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
       deltaTime: gl.getUniformLocation(shaderProgram, "uDeltaTime"),
-      elapsedTime: gl.getUniformLocation(shaderProgram, "uElapsedTime")
+      elapsedTime: gl.getUniformLocation(shaderProgram, "uElapsedTime"),
+      mouseX: gl.getUniformLocation(shaderProgram, "uMouseX"),
+      mouseY: gl.getUniformLocation(shaderProgram, "uMouseY")
     }
   };
   // Here's where we call the routine that builds all the
@@ -76,6 +78,15 @@ export default function app(gl: WebGL2RenderingContext) {
 
   window.addEventListener("resize", () => {
     resize(gl);
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (e instanceof MouseEvent) {
+      const mouseXClipSpace = (e.clientX / window.innerWidth) * 2 - 1;
+      const mouseYClipSpace = (e.clientY / window.innerHeight) * -2 + 1;
+      setUniform(gl, programInfo, "mouseX", mouseXClipSpace);
+      setUniform(gl, programInfo, "mouseY", mouseYClipSpace);
+    }
   });
 }
 
@@ -133,7 +144,7 @@ function drawScene<ExtraUniforms extends DEWebGLUniformsLocationsKeys>(
   mat4.translate(
     modelViewMatrix, // destination matrix
     modelViewMatrix, // matrix to translate
-    [0.0, 0.0, -3.0]
+    [0.0, 0.0, -0.5]
   ); // amount to translate
 
   // Tell WebGL how to pull out the positions from the position
