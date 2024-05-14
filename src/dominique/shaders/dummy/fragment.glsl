@@ -2,6 +2,7 @@ precision highp float;
 
 uniform float uDeltaTime;
 uniform float uElapsedTime;
+uniform float uElapsedTimeEnterAnim;
 uniform float uMouseX;
 uniform float uMouseY;
 
@@ -50,7 +51,7 @@ void main() {
     float movementAmmount = 0.01;
     float parallaxAmmount = 0.005;
 
-    float animDuration = 2.0;
+    float animDuration = 1.6;
     float animSpeed = 0.5;
 
     vec3 skyColor = vec3(0.145, 0.66, 0.93);
@@ -59,7 +60,9 @@ void main() {
     vec3 cColor = rgbFromRGB(255, 151, 9);
 
     const int circlesAmmount = 5;
-    vec2 cCenter = vec2(0.5);
+    float circleCenterX = tweenWithWobble(0.5, 0.5, uElapsedTimeEnterAnim, animDuration);
+    float circleCenterY = tweenWithWobble(-0.5, 0.5, uElapsedTimeEnterAnim, animDuration);
+    vec2 cCenter = vec2(circleCenterX, circleCenterY);
     float cRadius = 0.08;
     float circlesWidth = tweenWithWobble(0.1, 0.035, uElapsedTime, animDuration);
     float cInnerRadius = cRadius - circlesWidth;
@@ -77,6 +80,10 @@ void main() {
     for (int i = 0; i < circlesAmmount; i++) {
         float diff =  float(i) * circlesDiff;
         vec2 center = cCenter + mousePos * parallaxAmmount * float(i + 1);
+        // TODO this is notworking
+        //        float centerX = tweenWithWobble(cCenter.x, cCenter.x + mousePos.x * parallaxAmmount * float(i + 1), uElapsedTime, animDuration);
+        //        float centerY = tweenWithWobble(cCenter.y, cCenter.y + mousePos.y * parallaxAmmount * float(i + 1), uElapsedTime, animDuration);
+        //        vec2 center = vec2(centerX, centerY);
         float c1 = ringSmoothSDF(vUv, center, cRadius + diff, cInnerRadius + diff, cSmoothness, cSmoothness);
         float c2 = ringSmoothSDF(vUv, center, cRadius + diff, cInnerRadius + diff, cSmoothness, cSmoothnessInner);
         vec3 c1Color = mix(cColor, cColorDark, c2);
@@ -85,5 +92,4 @@ void main() {
 
 
     gl_FragColor = vec4(color, 1.0);
-    //    gl_FragColor = vec4(f, 0.0, 0.0, 1.0);
 }

@@ -11,7 +11,7 @@ import {
 } from "../dominique/shaders";
 import Stats from "stats.js";
 
-type ExtraUniformsLocations = "deltaTime" | "elapsedTime" | "mouseX" | "mouseY";
+type ExtraUniformsLocations = "deltaTime" | "elapsedTime" | "mouseX" | "mouseY" | "elapsedTimeForEnterAnim";
 
 export default function app(gl: WebGL2RenderingContext) {
   // Set clear color to black, fully opaque
@@ -43,6 +43,7 @@ export default function app(gl: WebGL2RenderingContext) {
       modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
       deltaTime: gl.getUniformLocation(shaderProgram, "uDeltaTime"),
       elapsedTime: gl.getUniformLocation(shaderProgram, "uElapsedTime"),
+      elapsedTimeForEnterAnim: gl.getUniformLocation(shaderProgram, "uElapsedTimeEnterAnim"),
       mouseX: gl.getUniformLocation(shaderProgram, "uMouseX"),
       mouseY: gl.getUniformLocation(shaderProgram, "uMouseY")
     }
@@ -54,6 +55,7 @@ export default function app(gl: WebGL2RenderingContext) {
   // Draw scene inside request animation frame
   let then = 0;
   let elapsedTime = 0;
+  let elapsedTimeForEnterAnim = 0;
 
   function render(now: number) {
     stats.begin();
@@ -62,11 +64,13 @@ export default function app(gl: WebGL2RenderingContext) {
     now *= 0.001;
     const deltaTime = now - then;
     elapsedTime += deltaTime;
+    elapsedTimeForEnterAnim += deltaTime;
     then = now;
 
     // update shaders with delta time
     setUniform(gl, programInfo, "deltaTime", deltaTime);
     setUniform(gl, programInfo, "elapsedTime", elapsedTime);
+    setUniform(gl, programInfo, "elapsedTimeForEnterAnim", elapsedTimeForEnterAnim);
 
     drawScene(gl, programInfo, buffers);
 
