@@ -88,6 +88,10 @@ export default function app(gl: WebGL2RenderingContext) {
       setUniform(gl, programInfo, "mouseY", mouseYClipSpace);
     }
   });
+
+  window.addEventListener("mousedown", () => {
+    elapsedTime = 0;
+  });
 }
 
 function drawScene<ExtraUniforms extends DEWebGLUniformsLocationsKeys>(
