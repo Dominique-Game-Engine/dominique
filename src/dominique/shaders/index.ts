@@ -1,16 +1,17 @@
 import { getMultiSinkLogger } from "../logger/logger";
 
-export type DEWebGLUniforms = Record<string, WebGLUniformLocation | null>;
+export type DEWebGLUniformsLocationsKeys = string;
 
-export interface DEWebGLProgramInfo<T extends DEWebGLUniforms> {
+export interface DEWebGLProgramInfo<T extends DEWebGLUniformsLocationsKeys = "projectionMatrix"> {
   program: WebGLProgram;
   attribLocations: {
     vertexPosition: number;
+    uv: number;
   };
   uniformLocations: {
     projectionMatrix: WebGLUniformLocation | null;
     modelViewMatrix: WebGLUniformLocation | null;
-  } & T;
+  } & Record<T, WebGLUniformLocation | null>;
 }
 
 //
@@ -90,13 +91,14 @@ function loadShader(gl: WebGL2RenderingContext, type: number, source: string) {
 // buffer into the vertexPosition attribute.
 export function setPositionAttribute(
   gl: WebGL2RenderingContext,
-  programInfo: DEWebGLProgramInfo<{}>,
+  programInfo: DEWebGLProgramInfo,
   buffers: {
     position: WebGLBuffer | null
-  }
+  },
+  components: number = 3
 ) {
-  // pull out 2 values per iteration
-  const numComponents = 2;
+  // pull out 2 values per iteration by default
+  const numComponents = components;
   // the data in the buffer is 32bit floats
   const type = gl.FLOAT;
   // don't normalize
@@ -118,16 +120,34 @@ export function setPositionAttribute(
   gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
 }
 
+export function setUvAttribute(gl: WebGL2RenderingContext, programInfo: DEWebGLProgramInfo, buffers: {
+  uv: WebGLBuffer | null
+}) {
+  const numComponents = 2;
+  const type = gl.FLOAT;
+  const normalize = false;
+  const stride = 0;
+  const offset = 0;
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffers.uv);
+  gl.vertexAttribPointer(
+    programInfo.attribLocations.uv,
+    numComponents,
+    type,
+    normalize,
+    stride,
+    offset
+  );
+  gl.enableVertexAttribArray(programInfo.attribLocations.uv);
+}
+
 // TODO: add support for non 1f uniforms
-export function setUniform<ExtraUniforms extends DEWebGLUniforms>(
+export function setUniform<ExtraUniforms extends DEWebGLUniformsLocationsKeys>(
   gl: WebGL2RenderingContext,
   programInfo: DEWebGLProgramInfo<ExtraUniforms>,
   name: keyof DEWebGLProgramInfo<ExtraUniforms>["uniformLocations"],
   value: number
 ) {
-  const uniformLocation = gl.getUniformLocation(programInfo.program, name as string);
-
   // Set the value of the uniform
   gl.useProgram(programInfo.program);
-  gl.uniform1f(uniformLocation, value);
+  gl.uniform1f(programInfo.uniformLocations[name], value);
 }

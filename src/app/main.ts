@@ -3,12 +3,15 @@ import { de } from "../dominique";
 import { initBuffers } from "../dominique/buffers";
 import vsSource from "../dominique/shaders/dummy/vertex.glsl?raw";
 import fsSource from "../dominique/shaders/dummy/fragment.glsl?raw";
-import { DEWebGLProgramInfo, DEWebGLUniforms, setPositionAttribute, setUniform } from "../dominique/shaders";
+import {
+  DEWebGLProgramInfo,
+  DEWebGLUniformsLocationsKeys,
+  setPositionAttribute,
+  setUniform, setUvAttribute
+} from "../dominique/shaders";
 import Stats from "stats.js";
 
-interface ExtraUniforms extends DEWebGLUniforms {
-  deltaTime: WebGLUniformLocation | null;
-}
+type ExtraUniformsLocations = "deltaTime" | "elapsedTime";
 
 export default function app(gl: WebGL2RenderingContext) {
   // Set clear color to black, fully opaque
@@ -26,10 +29,11 @@ export default function app(gl: WebGL2RenderingContext) {
   // Collect all the info needed to use the shader program.
   // Look up which attribute our shader program is using
   // for aVertexPosition and look up uniform locations.
-  const programInfo: DEWebGLProgramInfo<ExtraUniforms> = {
+  const programInfo: DEWebGLProgramInfo<ExtraUniformsLocations> = {
     program: shaderProgram,
     attribLocations: {
-      vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition")
+      vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+      uv: gl.getAttribLocation(shaderProgram, "aUv")
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(
@@ -37,7 +41,8 @@ export default function app(gl: WebGL2RenderingContext) {
         "uProjectionMatrix"
       ),
       modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
-      deltaTime: gl.getUniformLocation(shaderProgram, "uDeltaTime")
+      deltaTime: gl.getUniformLocation(shaderProgram, "uDeltaTime"),
+      elapsedTime: gl.getUniformLocation(shaderProgram, "uElapsedTime")
     }
   };
   // Here's where we call the routine that builds all the
@@ -46,6 +51,7 @@ export default function app(gl: WebGL2RenderingContext) {
 
   // Draw scene inside request animation frame
   let then = 0;
+  let elapsedTime = 0;
 
   function render(now: number) {
     stats.begin();
@@ -53,10 +59,12 @@ export default function app(gl: WebGL2RenderingContext) {
     // convert to seconds
     now *= 0.001;
     const deltaTime = now - then;
+    elapsedTime += deltaTime;
     then = now;
 
     // update shaders with delta time
     setUniform(gl, programInfo, "deltaTime", deltaTime);
+    setUniform(gl, programInfo, "elapsedTime", elapsedTime);
 
     drawScene(gl, programInfo, buffers);
 
@@ -71,11 +79,12 @@ export default function app(gl: WebGL2RenderingContext) {
   });
 }
 
-function drawScene<ExtraUniforms extends DEWebGLUniforms>(
+function drawScene<ExtraUniforms extends DEWebGLUniformsLocationsKeys>(
   gl: WebGL2RenderingContext,
   programInfo: DEWebGLProgramInfo<ExtraUniforms>,
   buffers: {
     position: WebGLBuffer | null
+    uv: WebGLBuffer | null
   }
 ) {
   // Clear to black, fully opaque
@@ -130,6 +139,8 @@ function drawScene<ExtraUniforms extends DEWebGLUniforms>(
   // Tell WebGL how to pull out the positions from the position
   // buffer into the vertexPosition attribute.
   setPositionAttribute(gl, programInfo, buffers);
+
+  setUvAttribute(gl, programInfo, buffers);
 
   // Tell WebGL to use our program when drawing
   gl.useProgram(programInfo.program);
