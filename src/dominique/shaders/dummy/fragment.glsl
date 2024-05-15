@@ -48,14 +48,15 @@ float tweenWithWobble(float from, float to, float time, float duration) {
     return lerp(from, to, easeOutElastic(clamp(time / duration, 0.0, 1.0)));
 }
 
-float cloudSDF(vec2 p, vec2 center, float radius) {
+float cloudSDF(vec2 p, vec2 center, float radius, float seed) {
     const int components = 4;
     float randRadius = radius;
     float res = 0.0;
     for (int i = 0; i < components; i++) {
-        float x = center.x + (rand(vec2(-2.0 * float(i))) - 0.5) * randRadius * 2.0;
-        float y = center.y + (rand(vec2(2.0 * float(i))) - 0.5) * randRadius;
-        float v = circleSmoothSDF(p, vec2(x, y), rand(vec2(2.5 * float(i))) * 0.2 * radius + radius, 0.001);
+        float mseed = float(i) + seed;
+        float x = center.x + (rand(vec2(-2.0 * mseed)) - 0.5) * randRadius * 2.0;
+        float y = center.y + (rand(vec2(2.0 * mseed)) - 0.5) * randRadius;
+        float v = circleSmoothSDF(p, vec2(x, y), rand(vec2(2.5 * mseed)) * 0.2 * radius + radius, 0.001);
         res += v;
     }
     return res;
@@ -97,8 +98,12 @@ void main() {
 
     for (int i = 0; i < cloudsAmmount; i++) {
         float diff =  float(i) * 0.01;
-        vec2 center =vec2(0.5 + rand(vec2(float(i))) * 1.5, 0.5 + (rand(vec2(-1.055 * float(i))) - 0.5) * 0.4);
-        float cloud = cloudSDF(vUv, vec2(mod(center.x + uElapsedTimeEnterAnim * cloudSpeed, 1.1), center.y), rand(vec2(float(i))) * 0.02 + 0.03);
+        vec2 center =vec2(0.5 + (rand(vec2(float(i))) - 0.5) * 2.5, 0.5 + (rand(vec2(-1.055 * float(i))) - 0.5) * 0.4);
+        float cloud = cloudSDF(
+        vUv,
+        vec2(mod(center.x + uElapsedTimeEnterAnim * cloudSpeed, 1.3), center.y), rand(vec2(float(i))) * 0.02 + 0.03,
+        float(i)*200.0
+        );
         color = mix(color, cloudColor, cloud);
     }
 
