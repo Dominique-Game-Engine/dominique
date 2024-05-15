@@ -22,3 +22,6 @@ npm run dev
 - Shader toy example wannabe
 
 ![img.png](img.png)
+
+## TODO
+Improve random generation of the clouds

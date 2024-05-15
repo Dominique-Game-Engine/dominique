@@ -8,6 +8,10 @@ uniform float uMouseY;
 
 varying vec2 vUv;
 
+float rand(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 float ringSmoothSDF(vec2 p, vec2 center, float radius, float innerRadius, float smoothness, float innerSmoothness) {
     float d = distance(p, center);
     float f = smoothstep(radius, radius + smoothness, d);
@@ -44,6 +48,19 @@ float tweenWithWobble(float from, float to, float time, float duration) {
     return lerp(from, to, easeOutElastic(clamp(time / duration, 0.0, 1.0)));
 }
 
+float cloudSDF(vec2 p, vec2 center, float radius) {
+    const int components = 4;
+    float randRadius = radius;
+    float res = 0.0;
+    for (int i = 0; i < components; i++) {
+        float x = center.x + (rand(vec2(-2.0 * float(i))) - 0.5) * randRadius * 2.0;
+        float y = center.y + (rand(vec2(2.0 * float(i))) - 0.5) * randRadius;
+        float v = circleSmoothSDF(p, vec2(x, y), rand(vec2(2.5 * float(i))) * 0.2 * radius + radius, 0.001);
+        res += v;
+    }
+    return res;
+}
+
 void main() {
     // TODO pass this as vec2 from uniforms, right now my uniforms only support floats
     vec2 mousePos = vec2(uMouseX, uMouseY);
@@ -53,13 +70,17 @@ void main() {
 
     float animDuration = 1.6;
     float animSpeed = 0.5;
+    float cloudSpeed = 0.05;
 
     vec3 skyColor = vec3(0.145, 0.66, 0.93);
-    vec3 centerColor = vec3(0.03, 0.13, 0.21);
+    vec3 cloudColor = vec3(1.0, 1.0, 1.0);
+    vec3 centerColor = vec3(0.145, 0.66, 0.93);
+    vec3 centerColorDark = vec3(0.03, 0.13, 0.21);
     vec3 cColorDark = rgbFromRGB(190, 27, 14);
     vec3 cColor = rgbFromRGB(255, 151, 9);
 
     const int circlesAmmount = 5;
+    const int cloudsAmmount = 5;
     float circleCenterX = tweenWithWobble(0.5, 0.5, uElapsedTimeEnterAnim, animDuration);
     float circleCenterY = tweenWithWobble(-0.5, 0.5, uElapsedTimeEnterAnim, animDuration);
     vec2 cCenter = vec2(circleCenterX, circleCenterY);
@@ -73,9 +94,18 @@ void main() {
 
     vec3 color = skyColor;
 
+
+    for (int i = 0; i < cloudsAmmount; i++) {
+        float diff =  float(i) * 0.01;
+        vec2 center =vec2(0.5 + rand(vec2(float(i))) * 1.5, 0.5 + (rand(vec2(-1.055 * float(i))) - 0.5) * 0.4);
+        float cloud = cloudSDF(vUv, vec2(mod(center.x + uElapsedTimeEnterAnim * cloudSpeed, 1.1), center.y), rand(vec2(float(i))) * 0.02 + 0.03);
+        color = mix(color, cloudColor, cloud);
+    }
+
     float centerCircle = circleSmoothSDF(vUv, cCenter, cRadius + 0.01, cSmoothness);
     float centerCircleGradient = radialGradient(vUv, cCenter, 0.07);
-    color = mix(color, centerColor, centerCircle * (1.0 - centerCircleGradient));
+    vec3 centerCircleColor = mix(centerColor, centerColorDark, 1.0 - centerCircleGradient);
+    color = mix(color, centerCircleColor, centerCircle);
 
     for (int i = 0; i < circlesAmmount; i++) {
         float diff =  float(i) * circlesDiff;
@@ -92,4 +122,5 @@ void main() {
 
 
     gl_FragColor = vec4(color, 1.0);
+    //    gl_FragColor = vec4(cloud, 0.0, 0.0, 1.0);
 }
