@@ -1,8 +1,16 @@
 {
-  "name": "blacksmith",
-  "private": true,
-  "version": "0.0.0",
+  "name": "dominique",
+  "description": "Educational game engine",
+  "author": "Darián López Utra",
+  "license": "MIT",
+  "private": false,
+  "version": "0.0.2",
   "type": "module",
+  "main": "./dist/dominique.umd.cjs",
+  "module": "./dist/dominique.js",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -11,6 +19,7 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@types/node": "^20.14.2",
     "@types/stats.js": "0.17.3",
     "prettier": "3.2.5",
     "typescript": "^5.0.2",
