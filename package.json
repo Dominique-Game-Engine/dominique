@@ -4,7 +4,7 @@
   "author": "Darián López Utra",
   "license": "MIT",
   "private": false,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "main": "./dist/dominique.umd.cjs",
   "module": "./dist/dominique.js",
@@ -17,7 +17,10 @@
     "preview": "vite preview",
     "format:fix": "prettier --write .",
     "format:check": "prettier --check .",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "release:patch": "node scripts/release.js patch",
+    "release:minor": "node scripts/release.js minor",
+    "release:major": "node scripts/release.js major"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
