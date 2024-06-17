@@ -1,4 +1,4 @@
-# Looney Tunes Dominique Engine Example
+# Dominique Engine
 
 ## How to run
 
@@ -11,17 +11,3 @@ npm install
 ```bash
 npm run dev
 ```
-
-## Featuring:
-
-- Resize
-- Request animation frame render
-- Stats.js
-- WebGl from scratch
-- SDF (Signed Distance Field) rendering
-- Shader toy example wannabe
-
-![img.png](img.png)
-
-## TODO
-Improve random generation of the clouds
