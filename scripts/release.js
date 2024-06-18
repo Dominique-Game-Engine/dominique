@@ -38,10 +38,8 @@ packageJson.version = newVersion;
 writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
 // Commit the new version and create a new tag
-execSync("git config --global user.name \"release-bot\"");
-execSync("git config --global user.email \"release-bot@users.noreply.github.com\"");
 execSync("git add package.json");
-execSync(`git commit -m "Update version to ${newVersion}"`);
+execSync(`git -c user.name="release-bot" -c user.email="release-bot@users.noreply.github.com" commit -m "Update version to ${newVersion}"`);
 execSync(`git tag v${newVersion}`);
 execSync("git push --follow-tags");
 
