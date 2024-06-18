@@ -4,7 +4,7 @@
   "author": "Darián López Utra",
   "license": "MIT",
   "private": false,
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "main": "./dist/dominique.umd.cjs",
   "module": "./dist/dominique.js",
